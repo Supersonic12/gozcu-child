@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/jesus/Projects/gozcu-child/build",
+  "command": "/usr/bin/c++ -DBOOST_ASIO_NO_DEPRECATED -std=gnu++17 -o CMakeFiles/gozcu-child.dir/src/main.cpp.o -c /home/jesus/Projects/gozcu-child/src/main.cpp",
+  "file": "/home/jesus/Projects/gozcu-child/src/main.cpp",
+  "output": "/home/jesus/Projects/gozcu-child/build/CMakeFiles/gozcu-child.dir/src/main.cpp.o"
+}
+]
