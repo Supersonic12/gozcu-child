@@ -1,0 +1,14 @@
+{
+    "use_fan_del" : false,
+    "use_fan_mod" : false,
+    "use_fan_cl_wr":  false,
+    "use_fan_acc" : false,
+    "use_fan_attr" : false,
+    "use_fan_del_self" : false,
+    "use_fan_mv_from" : false,
+    "use_fan_mv_to" : false,
+    "use_fan_mv_self" : false,
+    "use_fan_op" : false,
+    "use_fan_ev_on_child" : false,
+    "use_fan_crt" : false,
+}

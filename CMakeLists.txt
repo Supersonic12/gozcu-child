@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(gozcu-child
   src/main.cpp
+  src/controller.cpp
+  src/gatherer/eventWatcher.cpp
+
 )
 
 find_package(Boost REQUIRED)
