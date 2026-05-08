@@ -1,82 +1,67 @@
 #pragma once
-#include <linux/fanotify.h>
-#include <sys/fanotify.h>
-#include <sys/types.h>
 
 #include <cstdint>
 #include <nlohmann/json.hpp>
 #include <string>
-#include <utility>
-#include <vector>
 
-/*
- *  watcherMask struct is a mask struct that should be read from config file and then passed to
- * event watcher. It server no purpose other than what kind of notification are wanted by user. It
- * has 2 builtin functions readmask WriteMask which basically serve as the name suggests.
- */
-
-// FAN_MODIFY | FAN_CLOSE_WRITE | FAN_ACCESS | FAN_OPEN | FAN_ATTRIB |
-// FAN_CREATE | FAN_DELETE | FAN_DELETE_SELF | FAN_MOVED_FROM | FAN_MOVED_TO |
-// FAN_MOVE_SELF | FAN_EVENT_ON_CHILD,
 using json = nlohmann::json;
-struct watcherMask
-{
-    std::vector<std::pair<std::string, uint64_t>> flagMap = {
-        {"fan_mod", FAN_MODIFY},         {"fan_cl_wr", FAN_CLOSE_WRITE},
-        {"fan_acc", FAN_ACCESS},         {"fan_op", FAN_OPEN},
-        {"fan_attr", FAN_ATTRIB},        {"fan_crt", FAN_CREATE},
-        {"fan_del", FAN_DELETE},         {"fan_del_self", FAN_DELETE_SELF},
-        {"fan_mv_from", FAN_MOVED_FROM}, {"fan_mv_to", FAN_MOVED_TO},
-        {"fan_mv_self", FAN_MOVE_SELF},  {"fan_ev_on_child", FAN_EVENT_ON_CHILD}};
-    uint64_t finalMask;
-    /*
-     * readMask gets each key from json file and sets them on struct as separately and as final mask
-     * format basically it saves them
-     */
-    void readMask(const json& j)
-    {
-        finalMask = 0;
-        for (const auto [key, flag] : flagMap)
-        {
-            if (j.value(key, false) == true)
-            {
-                finalMask |= flag;
-            }
-        }
-    }
-    /*
-     * So this function just creates a json object to write to file. I don't know how to handle it,
-     * Should it directly write to file or just create a json object I guess I can later decide
-     */
-    json writeMask()
-    {
-        json j;
-        for (const auto [key, flag] : flagMap)
-        {
-            // if (j.contains(key) && j[key].is_boolean()) {
-            j[key] = (finalMask & flag) ? true : false;
-            //}
-        }
-        return j;
-    }
-};
-
-/*
- * This class will be responsible for config related operations such as reading from config and
- * writing back to config.
- */
 class ConfigHandler
 {
-   public:
-    uint64_t getMask();
-    void setMask(struct watcherMask& maskStruct);
-    void getConfigPath();
-
    private:
-    // uint64_t defaultmask = fan_mod | fan_cl_wr | fan_acc | fan_op | fan_attr |
-    // fan_crt | fan_del
-    // |
-    // fan_del_self | fan_mv_from | fan_mv_to | fan_mv_self | fan_ev_on_child;
-    std::filesystem::path configPath_;
-    watcherMask strMask_;
+    // this will be loaded from config file
+    json configData;
+    // defaulting to config path
+    std::filesystem::path getConfigPath();
+
+   public:
+    // This will read json object from file and save it to runtime json object
+    void loadFile();
+    // this will take private json object and write it to config file
+    void writeToFile();
+
+    template <typename T>
+    T get(const std::string& key)
+    {
+        if (configData.contains(key))
+        {
+            return configData.at(key).get<T>();
+        }
+        else
+        {
+            throw std::runtime_error(std::string("Non-existent key"));
+        }
+    };
+    template <typename T>
+    void set(const std::string& key, T& value)
+    {
+        configData[key] = value;
+        writeToFile();
+    }
 };
+// This struct should get a handler object inside and according to that handlers json data it should
+// get its own value key pair and behave accordingly. This can be implemented with either virtual
+// interface and derived classes or struct and template, claude said it would be better to implement
+// it with struct and this way I will need to create each of their own template type and will add
+// new struct if new kind of config is added to file
+struct maskStruct
+{
+    // Mask struct creates a handler object. fromHandler is for fetching specific data type from
+    // config file. In our case it is for fetching map of mask bit values. toHandler basically is
+    // just setting new value to specific key. In our case a map object to markMask key.
+    // TODO: build function for creating final mask from mask components.
+    ConfigHandler handler;
+    void fromHandler()
+    {
+        const std::string maskKey = "markMask";
+        std::map maskStateMap = handler.get<std::map<std::string, bool>>(maskKey);
+        // Here it says me expected expression, I don't have any idea what should I write there
+        // Fixed!
+    }
+    void toHandler(const std::string& key, std::map<std::string, bool>& maskMap)
+    {
+        handler.set<std::map<std::string, bool>>(key, maskMap);
+    }
+};
+// NOTE: I don't have any idea how should I implement a write to config feature with struct way. I
+// mean struct can use template and derived function again but seriously how will it know which file
+// it should write to. Oh I have an idea maybe this would be correct way to do it

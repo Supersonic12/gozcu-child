@@ -5,7 +5,7 @@
 /*
  * Code's execution starts from here it should create controller object which is basically god
  * object of this application
- * */
+ */
 int main()
 {
     Controller controller;
