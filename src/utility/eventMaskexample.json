@@ -1,4 +1,5 @@
 {
+    "maskMask":{
     "use_fan_del" : false,
     "use_fan_mod" : false,
     "use_fan_cl_wr":  false,
@@ -11,4 +12,5 @@
     "use_fan_op" : false,
     "use_fan_ev_on_child" : false,
     "use_fan_crt" : false,
+}
 }

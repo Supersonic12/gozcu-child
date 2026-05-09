@@ -1,3 +1,5 @@
+#include <cstdint>
+
 #include "gatherer/eventWatcher.hpp"
 #include "utility/configHandler.hpp"
 
@@ -12,5 +14,6 @@ class Controller
     void initWatcherMask();
 
    private:
-    // MaskDefiner myMask_;
+    maskStruct myMask;
+    uint64_t watcherMask_ = 0;
 };

@@ -9,7 +9,7 @@ add_executable(gozcu-child
   src/main.cpp
   src/controller.cpp
   src/gatherer/eventWatcher.cpp
-
+  src/utility/configHandler.cpp
 )
 
 find_package(Boost REQUIRED)
