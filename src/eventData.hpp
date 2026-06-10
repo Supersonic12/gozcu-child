@@ -1,6 +1,7 @@
 #pragma once
 #include <sys/fanotify.h>
 
+#include <chrono>
 #include <cstdint>
 #include <ctime>
 #include <filesystem>
@@ -15,14 +16,5 @@ struct eventData
     uint64_t mask;
     std::filesystem::path path;
     std::string filename;
-};
-/*
- * messageData isn't currently used it needs better handling
- */
-struct messageData
-{
-    int pid;
-    time_t timeStamp;
-    std::filesystem::path filePath;
-    std::string processName;
+    std::chrono::system_clock::time_point dateTime;
 };

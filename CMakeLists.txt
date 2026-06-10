@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(gozcu-child VERSION 0.1 LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
@@ -10,6 +10,7 @@ add_executable(gozcu-child
   src/controller.cpp
   src/gatherer/eventWatcher.cpp
   src/utility/configHandler.cpp
+  src/network/connHandler.cpp
 )
 
 find_package(Boost REQUIRED)

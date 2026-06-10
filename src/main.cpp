@@ -9,6 +9,7 @@
 int main()
 {
     Controller controller;
+    controller.initGod();
     std::cout << " some bullshit" << std::endl;
     return 0;
 }
