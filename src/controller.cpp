@@ -5,6 +5,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <thread>
+
+#include "utility/configHandler.hpp"
 Controller::Controller() {}
 /*
  * this is basically for initializing everything like needed variables for different tasks.
@@ -46,9 +48,41 @@ void Controller::initWatcher()
 
 void Controller::initWatcherMask()
 {
-    // fetch from config
-    myMask.fromHandler();
-    watcherMask_ = myMask.buildMask();
+    std::map<std::string, bool> maskMap = handler_.getMaskMap();
+    uint64_t builtMask = 0;
+    std::map<std::string, uint64_t> allMasks = {
+        {"use_fan_del", FAN_DELETE},
+        {"use_fan_mod", FAN_MODIFY},
+        {"use_fan_cl_wr", FAN_CLOSE_WRITE},
+        {"use_fan_acc", FAN_ACCESS},
+        {"use_fan_attr", FAN_ATTRIB},
+        {"use_fan_del_self", FAN_DELETE_SELF},
+        {"use_fan_mv_from", FAN_MOVED_FROM},
+        {"use_fan_mv_to", FAN_MOVED_TO},
+        {"use_fan_mv_self", FAN_MOVE_SELF},
+        {"use_fan_op", FAN_OPEN},
+        {"use_fan_ev_on_child", FAN_EVENT_ON_CHILD},
+        {"use_fan_crt", FAN_CREATE},
+    };
+    // uint64_t test_all_mask_enabled = 0;
+    // for (const auto [key, value] : allMasks) {
+    //   test_all_mask_enabled |= value;
+    // }
+    // std::cout << test_all_mask_enabled << std::endl;
+    for (const auto [key, enabled] : maskMap)
+
+    {
+        if (enabled)
+        {
+            auto it = allMasks.find(key);
+            if (it != allMasks.end())
+            {
+                builtMask |= it->second;
+            }
+        }
+    }
+    watcherMask_ = builtMask;
+
     std::cout << watcherMask_ << std::endl;
 }
 
@@ -66,4 +100,9 @@ void Controller::initConnProtocol()
         }
         outgoingQueueHandler_->waitForCondition();
     }
+}
+
+void Controller::initServerCredentials()
+{
+    //
 }

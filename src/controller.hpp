@@ -18,7 +18,7 @@ class Controller
     void initGod();
     // init watcherMask is for creating maskStruct object and build mask.
     void initWatcherMask();
-
+    void initServerCredentials();
     /*
      * i need a queue to where our agent push data and network will process it as frames and send
      * it. and also an incoming queue but it will be implemented later
@@ -30,11 +30,10 @@ class Controller
     void initWatcher();
 
    private:
-    // this struct is for getting FANOTIFY_MARK event mask from config and build
-    // it
-    maskStruct myMask;
-    // this variable is for saving result of building mask in maskStruct
+    // this variable is for saving fanotify_mark mask's built version
     uint64_t watcherMask_ = 0;
     std::shared_ptr<queueHandler> outgoingQueueHandler_ = std::make_shared<queueHandler>();
     boost::asio::io_context io_context_;
+
+    ConfigHandler handler_;
 };
