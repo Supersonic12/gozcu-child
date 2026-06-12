@@ -44,8 +44,8 @@ class ConfigHandler
     void writeToFile();
 
     std::map<std::string, bool> getMaskMap();
-    serverInfo getServerInfo();
+    ServerInfo getServerInfo();
 
     void saveMaskSettings(std::map<std::string, bool>& maskMap);
-    void saveServerInfoSettings(serverInfo& info);
+    void saveServerInfoSettings(ServerInfo& serverInfo);
 };

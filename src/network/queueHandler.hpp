@@ -30,14 +30,18 @@ class queueHandler
     }
 
     // while a pop happens again queue should be locked.
-    eventData popAndReturn()
+    eventData returnData()
     {
         std::unique_lock<std::mutex> lock(eventDatasMutex);
 
         eventData poppedData = eventDatas->front();
-        eventDatas->pop();
 
         return poppedData;
+    }
+    void popData()
+    {
+        std::unique_lock<std::mutex> lock(eventDatasMutex);
+        eventDatas->pop();
     }
     bool isQueueEmpty()
     {

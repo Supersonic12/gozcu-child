@@ -1,9 +1,9 @@
 #pragma once
 #include <nlohmann/json.hpp>
 #include <string>
-struct serverInfo
+struct ServerInfo
 {
     std::string ipAddress = "";
-    int portAddress = 0;
+    std::string portAddress = "";
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(serverInfo, ipAddress, portAddress);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ServerInfo, ipAddress, portAddress);

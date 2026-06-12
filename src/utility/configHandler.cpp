@@ -98,12 +98,12 @@ std::map<std::string, bool> ConfigHandler::getMaskMap()
     return maskStateMap;
 }
 
-serverInfo ConfigHandler::getServerInfo()
+ServerInfo ConfigHandler::getServerInfo()
 {
-    serverInfo info;
-    const std::string serverInfoKey = "serverConf";
-    info = get<serverInfo>(serverInfoKey);
-    return info;
+    ServerInfo serverInfo;
+    const std::string serverInfoKey = "serverInfo";
+    serverInfo = get<ServerInfo>(serverInfoKey);
+    return serverInfo;
 }
 
 void ConfigHandler::saveMaskSettings(std::map<std::string, bool>& maskMap)

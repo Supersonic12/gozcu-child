@@ -6,6 +6,7 @@
 #include "network/connHandler.hpp"
 #include "network/queueHandler.hpp"
 #include "utility/configHandler.hpp"
+#include "utility/serverInfo.hpp"
 /* This class is core of gozcu-child project
  * It should get watch Mask from config file
  * It should basically create an eventWatcher class object
@@ -35,5 +36,8 @@ class Controller
     std::shared_ptr<queueHandler> outgoingQueueHandler_ = std::make_shared<queueHandler>();
     boost::asio::io_context io_context_;
 
-    ConfigHandler handler_;
+    ConfigHandler configHandler_;
+    ServerInfo serverInfo_;
+    ConnState connState_;
+    std::atomic<bool> keepConnection_ = true;
 };

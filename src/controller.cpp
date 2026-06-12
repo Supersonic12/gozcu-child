@@ -2,11 +2,13 @@
 
 #include <unistd.h>
 
+#include <boost/asio/executor_work_guard.hpp>
 #include <iostream>
 #include <stdexcept>
 #include <thread>
 
 #include "utility/configHandler.hpp"
+#include "utility/serverInfo.hpp"
 Controller::Controller() {}
 /*
  * this is basically for initializing everything like needed variables for different tasks.
@@ -16,11 +18,18 @@ Controller::Controller() {}
 void Controller::initGod()
 {
     initWatcherMask();
+    initServerCredentials();
+
+    auto work = boost::asio::make_work_guard(io_context_);
+
+    std::thread ioThread(&Controller::io_context_, this);
 
     std::thread watcherThread(&Controller::initWatcher, this);
 
     std::thread connThread(&Controller::initConnProtocol, this);
 
+    work.reset();
+    ioThread.join();
     watcherThread.join();
     connThread.join();
 }
@@ -48,7 +57,7 @@ void Controller::initWatcher()
 
 void Controller::initWatcherMask()
 {
-    std::map<std::string, bool> maskMap = handler_.getMaskMap();
+    std::map<std::string, bool> maskMap = configHandler_.getMaskMap();
     uint64_t builtMask = 0;
     std::map<std::string, uint64_t> allMasks = {
         {"use_fan_del", FAN_DELETE},
@@ -90,19 +99,31 @@ void Controller::initWatcherMask()
 // this is for only demo purposes, i will definitely go over them for optimizations
 void Controller::initConnProtocol()
 {
-    ConnHandler connHandler_(io_context_, outgoingQueueHandler_);
-    connHandler_.startConnection();
-    while (true)
+    try
     {
-        if (!outgoingQueueHandler_->isQueueEmpty())
+        std::cout << "trying connection\n";
+        ConnHandler connHandler_(io_context_, outgoingQueueHandler_, serverInfo_, keepConnection_);
+        connHandler_.startConnection();
+        while (keepConnection_)
         {
-            connHandler_.sendData();
+            if (connHandler_.getState() == ConnState::ConnectionFailed ||
+                connHandler_.getState() == ConnState::Disconnected)
+            {
+                connHandler_.scheduleReconnect(5);
+                continue;
+            }
+            outgoingQueueHandler_->waitForCondition();
+            if (!outgoingQueueHandler_->isQueueEmpty())
+            {
+                connHandler_.sendData();
+            }
         }
-        outgoingQueueHandler_->waitForCondition();
+        connHandler_.endConnection();
+    }
+    catch (std::runtime_error& e)
+    {
+        std::cerr << e.what() << std::endl;
     }
 }
 
-void Controller::initServerCredentials()
-{
-    //
-}
+void Controller::initServerCredentials() { serverInfo_ = configHandler_.getServerInfo(); }
