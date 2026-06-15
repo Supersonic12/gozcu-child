@@ -3,7 +3,6 @@
 
 #include <chrono>
 #include <cstdint>
-#include <ctime>
 #include <filesystem>
 #include <string>
 /*
@@ -17,4 +16,6 @@ struct eventData
     std::filesystem::path path;
     std::string filename;
     std::chrono::system_clock::time_point dateTime;
+    std::string fileHash;
+    bool checkHash = false;
 };

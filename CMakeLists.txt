@@ -11,6 +11,7 @@ add_executable(gozcu-child
   src/gatherer/eventWatcher.cpp
   src/utility/configHandler.cpp
   src/network/connHandler.cpp
+  src/hasher/hashEngine.cpp
 )
 
 find_package(Boost REQUIRED)

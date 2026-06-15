@@ -15,8 +15,8 @@ class eventWatcher
 {
    public:
     eventWatcher(uint64_t watcherMask, std::vector<std::filesystem::path> paths,
-                 std::shared_ptr<queueHandler>& outgoingQueue)
-        : watchedPaths_(paths), watchMask_(watcherMask), outgoingQueue_(outgoingQueue)
+                 std::shared_ptr<queueHandler>& hashQueue)
+        : watchedPaths_(paths), watchMask_(watcherMask), hashQueue_(hashQueue)
     {
         if (watchedPaths_.empty())
         {
@@ -37,5 +37,5 @@ class eventWatcher
    private:
     std::vector<std::filesystem::path> watchedPaths_;
     uint64_t watchMask_;
-    std::shared_ptr<queueHandler> outgoingQueue_;
+    std::shared_ptr<queueHandler> hashQueue_;
 };

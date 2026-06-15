@@ -76,9 +76,18 @@ void ConnHandler::sendData()
     {
         return;
     }
-    json dataSent = wrapData(queueToSend_->returnData());
+    eventData dataSent = queueToSend_->waitReturnData();
+    json dataSentJson;
+    if (dataSent.fileHash == "")
+    {
+        dataSentJson = wrapData(dataSent, false);
+    }
+    else
+    {
+        dataSentJson = wrapData(dataSent, true);
+    }
     std::shared_ptr<std::string> strDataSent =
-        std::make_shared<std::string>(dataSent.dump() + "\n");
+        std::make_shared<std::string>(dataSentJson.dump() + "\n");
     boost::system::error_code errorCode;
     boost::asio::write(*socket_, boost::asio::buffer(*strDataSent), errorCode);
     if (errorCode)
@@ -97,7 +106,7 @@ void ConnHandler::sendData()
     }
     else
     {
-        queueToSend_->popData();
+        queueToSend_->PopData();
     }
 }
 void ConnHandler::scheduleReconnect(int seconds)

@@ -1,5 +1,6 @@
 #include "controller.hpp"
 
+#include <linux/fanotify.h>
 #include <unistd.h>
 
 #include <boost/asio/executor_work_guard.hpp>
@@ -7,6 +8,8 @@
 #include <stdexcept>
 #include <thread>
 
+#include "eventData.hpp"
+#include "hasher/hashEngine.hpp"
 #include "utility/configHandler.hpp"
 #include "utility/serverInfo.hpp"
 Controller::Controller() {}
@@ -27,11 +30,24 @@ void Controller::initGod()
     std::thread watcherThread(&Controller::initWatcher, this);
 
     std::thread connThread(&Controller::initConnProtocol, this);
-
+    std::thread hashEngineThread(&Controller::initHashEngine, this);
     work.reset();
-    ioThread.join();
-    watcherThread.join();
-    connThread.join();
+    if (ioThread.joinable())
+    {
+        ioThread.join();
+    }
+    if (watcherThread.joinable())
+    {
+        watcherThread.join();
+    }
+    if (connThread.joinable())
+    {
+        connThread.join();
+    }
+    if (hashEngineThread.joinable())
+    {
+        hashEngineThread.join();
+    }
 }
 // for fanotify module to be initialized
 void Controller::initWatcher()
@@ -41,7 +57,7 @@ void Controller::initWatcher()
      * in close future
      */
     std::vector<std::filesystem::path> paths = {"/home/jesus/Documents/ASCII/"};
-    eventWatcher watcher(watcherMask_, paths, outgoingQueueHandler_);
+    eventWatcher watcher(watcherMask_, paths, hashQueueHandler_);
     try
     {
         watcher.startWatching();
@@ -102,23 +118,20 @@ void Controller::initConnProtocol()
     try
     {
         std::cout << "trying connection\n";
-        ConnHandler connHandler_(io_context_, outgoingQueueHandler_, serverInfo_, keepConnection_);
-        connHandler_.startConnection();
+        ConnHandler connHandler(io_context_, outgoingQueueHandler_, serverInfo_, keepConnection_);
+        connHandler.startConnection();
         while (keepConnection_)
         {
-            if (connHandler_.getState() == ConnState::ConnectionFailed ||
-                connHandler_.getState() == ConnState::Disconnected)
+            if (connHandler.getState() == ConnState::ConnectionFailed ||
+                connHandler.getState() == ConnState::Disconnected)
             {
-                connHandler_.scheduleReconnect(5);
+                connHandler.scheduleReconnect(5);
                 continue;
             }
-            outgoingQueueHandler_->waitForCondition();
-            if (!outgoingQueueHandler_->isQueueEmpty())
-            {
-                connHandler_.sendData();
-            }
+
+            connHandler.sendData();
         }
-        connHandler_.endConnection();
+        connHandler.endConnection();
     }
     catch (std::runtime_error& e)
     {
@@ -127,3 +140,32 @@ void Controller::initConnProtocol()
 }
 
 void Controller::initServerCredentials() { serverInfo_ = configHandler_.getServerInfo(); }
+void Controller::initHashEngine()
+{
+    try
+    {
+        HashEngine hashEngine(hashQueueHandler_, outgoingQueueHandler_, keepHashing_);
+        while (keepHashing_)
+
+        {
+            std::cout << "start waiting for condition\n";
+
+            eventData hashToNetData = hashQueueHandler_->waitReturnPopData();
+            std::cout << "waiting for condition passed\n";
+            std::cout << hashToNetData.dateTime << "\t-\t" << hashToNetData.filename << "\t-\t"
+                      << hashToNetData.mask << "\n";
+            hashToNetData.fileHash = "";
+            if ((hashToNetData.mask & FAN_MODIFY) || (hashToNetData.mask & FAN_CREATE))
+            {
+                std::string fileHash = hashEngine.hashFile(hashToNetData);
+                hashToNetData.fileHash = fileHash;
+                std::cout << "fileHash\t-\t" << hashToNetData.fileHash << std::endl;
+            }
+            hashEngine.populateOutgoingQueue(hashToNetData);
+        }
+    }
+    catch (std::runtime_error& e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
+}

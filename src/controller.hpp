@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "gatherer/eventWatcher.hpp"
+#include "hasher/hashEngine.hpp"
 #include "network/connHandler.hpp"
 #include "network/queueHandler.hpp"
 #include "utility/configHandler.hpp"
@@ -20,24 +21,22 @@ class Controller
     // init watcherMask is for creating maskStruct object and build mask.
     void initWatcherMask();
     void initServerCredentials();
-    /*
-     * i need a queue to where our agent push data and network will process it as frames and send
-     * it. and also an incoming queue but it will be implemented later
-     * std::queue<eventData> sentDataQueue;
-     * i need a wrapper for this queue to be able to work safely
-     */
-
     void initConnProtocol();
     void initWatcher();
+    void initHashEngine();
 
    private:
     // this variable is for saving fanotify_mark mask's built version
     uint64_t watcherMask_ = 0;
+    std::shared_ptr<queueHandler> hashQueueHandler_ = std::make_shared<queueHandler>();
     std::shared_ptr<queueHandler> outgoingQueueHandler_ = std::make_shared<queueHandler>();
+
     boost::asio::io_context io_context_;
 
     ConfigHandler configHandler_;
     ServerInfo serverInfo_;
     ConnState connState_;
     std::atomic<bool> keepConnection_ = true;
+
+    std::atomic<bool> keepHashing_ = true;
 };

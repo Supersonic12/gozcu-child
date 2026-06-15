@@ -139,6 +139,11 @@ void eventWatcher::startWatching()
                  */
                 while (FAN_EVENT_OK(metadata, remainingBufLen))
                 {
+                    if (metadata->pid == getpid())
+                    {
+                        FAN_EVENT_NEXT(metadata, remainingBufLen);
+                        continue;
+                    }
                     eventData event;
                     event.fd = fd;
                     event.mask = metadata->mask;
@@ -187,7 +192,7 @@ void eventWatcher::startWatching()
                     std::cout << "pid: " << event.pid << std::endl;
                     std::cout << "timestamp: " << event.dateTime << std::endl;
                     */// TODO: queue push over here
-                    outgoingQueue_->pushData(event);
+                    hashQueue_->pushData(event);
                     metadata = FAN_EVENT_NEXT(metadata, remainingBufLen);
                 }
             }

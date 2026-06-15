@@ -12,5 +12,9 @@
     "use_fan_op" : false,
     "use_fan_ev_on_child" : false,
     "use_fan_crt" : false
+},
+"serverInfo":{
+  "ipAddress" : "127.0.0.1", 
+  "portAddress" :"47001"
 }
 }

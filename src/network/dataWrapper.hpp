@@ -6,7 +6,7 @@ using json = nlohmann::json;
 // this is for converting eventData struct to json format and then it shall return it to
 // connectionHandler class
 // I guess i don't need a class here so i will change this into helper function;
-inline json wrapData(const eventData& data)
+inline json wrapData(const eventData& data, bool doHash)
 {
     json j;
     j["pid"] = data.pid;
@@ -14,6 +14,9 @@ inline json wrapData(const eventData& data)
     j["pathTo"] = data.path;
     j["fileName"] = data.filename;
     j["mask"] = data.mask;
-
+    if (doHash)
+    {
+        j["fileHash"] = data.fileHash;
+    }
     return j;
 };
